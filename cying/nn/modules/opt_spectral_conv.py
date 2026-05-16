@@ -1,0 +1,42 @@
+import torch
+import torch.nn as nn
+from .. import functional as F
+
+
+class BaseSpectralConv(nn.Module):
+    def __init__(self, in_channels, opt_size):
+        super().__init__()
+        self.in_channels = in_channels
+        self.opt_size = opt_size
+        self.weight = nn.Parameter(torch.zeros(in_channels,*self.opt_size,2),requires_grad=True)
+
+    def _get_conv_function(self):
+        raise NotImplementedError
+
+    def forward(self, input):
+        weight = torch.view_as_complex(self.weight)
+        return self._get_conv_function()(input,weight)
+
+
+class OptSpectralConv1d(BaseSpectralConv):
+    def __init__(self, in_channels, opt_size):
+        super().__init__(in_channels, opt_size)
+
+    def _get_conv_function(self):
+        return F.opt_spectral_conv1d
+
+
+class OptSpectralConv2d(BaseSpectralConv):
+    def __init__(self, in_channels, opt_size):
+        super().__init__(in_channels, opt_size)
+
+    def _get_conv_function(self):
+        return F.opt_spectral_conv2d
+
+
+class OptSpectralConv3d(BaseSpectralConv):
+    def __init__(self, in_channels, opt_size):
+        super().__init__(in_channels, opt_size)
+
+    def _get_conv_function(self):
+        return F.opt_spectral_conv3d
